@@ -1,15 +1,111 @@
 // imports
 import express from 'express';
-import * as networkDao from './network-dao.js';
+import cors from 'cors';
+import session from 'express-session';
+import passport from 'passport';
+import LocalStrategy from 'passport-local';
+import bcrypt from 'bcrypt';
+import * as networkDao from './DAO/network-dao.js';
+import * as usersDao from './DAO/user-dao.js';
 
 // init express
 const app = express();
 const port = 3001;
+app.use(express.json());
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'API server is working' });
+app.use(session({
+  secret: 'last-race-secret',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Passport config
+passport.use(new LocalStrategy(async (username, password, done) => {
+  try {
+    const user = await usersDao.getUserByUsername(username);
+
+    if (!user) {
+      return done(null, false, { message: 'Invalid username or password' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      return done(null, false, { message: 'Invalid username or password' });
+    }
+
+    return done(null, {
+      id: user.id,
+      username: user.username
+    });
+  } catch (err) {
+    return done(err);
+  }
+}));
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
 });
 
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await usersDao.getUserById(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
+
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Session
+app.post('/api/sessions', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: info.message });
+    }
+
+    req.login(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+
+      return res.json({
+        id: req.user.id,
+        username: req.user.username
+      });
+    });
+  })(req, res, next);
+});
+
+app.get('/api/sessions/current', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({
+      id: req.user.id,
+      username: req.user.username
+    });
+  } else {
+    res.status(401).json({ error: 'Not authenticated' });
+  }
+});
+
+app.delete('/api/sessions/current', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+
+    res.status(204).end();
+  });
+});
+
+// GET Network
 app.get('/api/stations', async (req, res) => {
   try {
     const stations = await networkDao.getStations();
@@ -63,6 +159,10 @@ app.get('/api/network/full', async (req, res) => {
     res.status(500).json({ error: 'Database error' });
   }
 });
+
+
+
+
 
 // activate the server
 app.listen(port, () => {
