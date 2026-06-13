@@ -5,9 +5,9 @@ import bcrypt from 'bcrypt';
 const db = new sqlite3.Database('last-race.sqlite');
 
 db.serialize(() => {
-    db.run('PRAGMA foreign_keys = ON'); /* it activates the control on foreign keys */
+    db.run('PRAGMA foreign_keys = ON'); // it activates the control on foreign keys
 
-    /*since with this script we initialize the database, it will drop any existing table */
+    //since with this script we initialize the database, it will drop any existing table
     db.run('DROP TABLE IF EXISTS game_steps');
     db.run('DROP TABLE IF EXISTS games');
     db.run('DROP TABLE IF EXISTS events');
