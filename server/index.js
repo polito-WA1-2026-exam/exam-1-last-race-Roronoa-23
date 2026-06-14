@@ -7,6 +7,7 @@ import LocalStrategy from 'passport-local';
 import bcrypt from 'bcrypt';
 import * as networkDao from './DAO/network-dao.js';
 import * as usersDao from './DAO/user-dao.js';
+import * as gamesDao from './DAO/games-dao.js'
 
 // init express
 const app = express();
@@ -169,7 +170,15 @@ app.get('/api/network/full', isLoggedIn, async (req, res) => {
   }
 });
 
-
+//Ranking api
+app.get('/api/ranking', isLoggedIn, async (req, res) => {
+  try {
+    const ranking = await gamesDao.getRanking();
+    res.json(ranking);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
 
 
 
