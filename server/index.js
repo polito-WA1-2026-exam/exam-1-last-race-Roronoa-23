@@ -60,7 +60,16 @@ passport.deserializeUser(async (id, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Session
+// Protection for APIs (middleware)
+const isLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  return res.status(401).json({ error: 'Not authenticated' });
+};
+
+// Session APIs
 app.post('/api/sessions', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
@@ -106,7 +115,7 @@ app.delete('/api/sessions/current', (req, res) => {
 });
 
 // GET Network
-app.get('/api/stations', async (req, res) => {
+app.get('/api/stations', isLoggedIn, async (req, res) => {
   try {
     const stations = await networkDao.getStations();
     res.json(stations);
@@ -115,7 +124,7 @@ app.get('/api/stations', async (req, res) => {
   }
 });
 
-app.get('/api/lines', async (req, res) => {
+app.get('/api/lines',isLoggedIn, async (req, res) => {
   try {
     const lines = await networkDao.getLines();
     res.json(lines);
@@ -124,7 +133,7 @@ app.get('/api/lines', async (req, res) => {
   }
 });
 
-app.get('/api/segments', async (req, res) => {
+app.get('/api/segments',isLoggedIn, async (req, res) => {
   try {
     const segments = await networkDao.getSegments();
     res.json(segments);
@@ -133,7 +142,7 @@ app.get('/api/segments', async (req, res) => {
   }
 });
 
-app.get('/api/line-stations', async (req, res) => {
+app.get('/api/line-stations',isLoggedIn, async (req, res) => {
   try {
     const lineStations = await networkDao.getLineStations();
     res.json(lineStations);
@@ -142,7 +151,7 @@ app.get('/api/line-stations', async (req, res) => {
   }
 });
 
-app.get('/api/network/full', async (req, res) => {
+app.get('/api/network/full', isLoggedIn, async (req, res) => {
   try {
     const stations = await networkDao.getStations();
     const lines = await networkDao.getLines();
