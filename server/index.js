@@ -7,7 +7,8 @@ import LocalStrategy from 'passport-local';
 import bcrypt from 'bcrypt';
 import * as networkDao from './DAO/network-dao.js';
 import * as usersDao from './DAO/user-dao.js';
-import * as gamesDao from './DAO/games-dao.js'
+import * as gamesDao from './DAO/games-dao.js';
+import * as gameService from './services/game-service.js';
 
 // init express
 const app = express();
@@ -177,6 +178,31 @@ app.get('/api/ranking', isLoggedIn, async (req, res) => {
     res.json(ranking);
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Api for creating a new game
+app.post('/api/games', isLoggedIn, async (req, res) => {
+  try {
+    const stations = await networkDao.getStations();
+    const segments = await networkDao.getSegments();
+
+    const { startStation, destinationStation } = gameService.selectStartAndDestination(stations,segments);
+
+    const gameId = await gamesDao.createGame(
+      req.user.id,
+      startStation.id,
+      destinationStation.id);
+
+    res.status(201).json({
+      id: gameId,
+      startStation,
+      destinationStation,
+      initialCoins: 20,
+      status: 'planning'});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Game creation failed' });
   }
 });
 

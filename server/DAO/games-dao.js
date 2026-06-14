@@ -20,3 +20,24 @@ export const getRanking = () => {
     });
   });
 };
+
+export const createGame = (userId, startStationId, destinationStationId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `INSERT INTO games (user_id,
+        start_station_id,
+        destination_station_id,
+        initial_coins,
+        final_score,
+        status,
+        created_at,
+        completed_at)VALUES (?, ?, ?, 20, NULL, 'planning', datetime('now'), NULL)`;
+
+    db.run(sql, [userId, startStationId, destinationStationId], function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(this.lastID);
+      }
+    });
+  });
+};
