@@ -13,7 +13,14 @@ import * as gameService from './services/game-service.js';
 // init express
 const app = express();
 const port = 3001;
+
 app.use(express.json());
+
+// cors config
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 
 app.use(session({
   secret: 'last-race-secret',
