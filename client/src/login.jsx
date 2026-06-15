@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Button, Card, Container, Form } from 'react-bootstrap';
+import { Alert, Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import * as API from './API';
 
@@ -23,38 +23,44 @@ function Login({ setUser }) {
   };
 
   return (
-    <Container className="mt-4">
-      <Card style={{ maxWidth: '30rem' }}>
-        <Card.Body>
-          <Card.Title>Login</Card.Title>
+    <main className="game-page login-page">
+      <section className="login-panel">
+        <h1 className="login-title">ACCESS TERMINAL</h1>
 
-          {errorMessage && (
-            <Alert variant="danger">{errorMessage}</Alert>
-          )}
+        <p className="login-subtitle">
+          Insert your pilot credentials to enter the race.
+        </p>
 
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Username</Form.Label>
-              <Form.Control
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-              />
-            </Form.Group>
+        {errorMessage && (
+          <Alert variant="danger">{errorMessage}</Alert>
+        )}
 
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </Form.Group>
+        <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3">
+            <Form.Label>Username</Form.Label>
+            <Form.Control
+              className="game-input"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+            />
+          </Form.Group>
 
-            <Button type="submit">Login</Button>
-          </Form>
-        </Card.Body>
-      </Card>
-    </Container>
+          <Form.Group className="mb-4">
+            <Form.Label>Password</Form.Label>
+            <Form.Control
+              className="game-input"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </Form.Group>
+
+          <Button type="submit" className="game-menu-button login-submit">
+            Login
+          </Button>
+        </Form>
+      </section>
+    </main>
   );
 }
 

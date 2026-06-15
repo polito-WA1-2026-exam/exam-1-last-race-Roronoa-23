@@ -6,25 +6,26 @@ import Login from './login';
 import HomePage from './homepage';
 import RankingPage from './rankingpage';
 import PlayPage from './playpage';
+import './App.css';
 
 
 function NavigationBar({ user, handleLogout }) {
   const navigate = useNavigate();
 
   return (
-    <Navbar bg="dark" data-bs-theme="dark" expand="lg">
+    <Navbar className="game-navbar" data-bs-theme="dark" expand="lg">
       <Container>
         <Navbar.Brand as={Link} to="/">
-          Last Race
+          LAST RACE
         </Navbar.Brand>
 
         <Nav className="ms-auto">
           {user && (
             <>
-              <Nav.Link as={Link} to="/play">
+              <Nav.Link as={Link} to="/play" className="game-menu-link">
                 Play
               </Nav.Link>
-              <Nav.Link as={Link} to="/ranking">
+              <Nav.Link as={Link} to="/ranking" className="game-menu-link">
                 Ranking
               </Nav.Link>
             </>
@@ -32,15 +33,15 @@ function NavigationBar({ user, handleLogout }) {
 
           {user ? (
             <>
-              <Navbar.Text className="me-3 ms-3">
-                Logged in as {user.username}
+              <Navbar.Text className="game-user-label">
+                Logged in as <span>{user.username}</span>
               </Navbar.Text>
-              <Button variant="outline-light" onClick={handleLogout}>
+              <Button className="game-menu-button" onClick={handleLogout}>
                 Logout
               </Button>
             </>
           ) : (
-            <Button variant="outline-light" onClick={() => navigate('/login')}>
+            <Button className="game-menu-button" onClick={() => navigate('/login')}>
               Login
             </Button>
           )}
@@ -88,6 +89,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <div className="app-shell">
       <NavigationBar user={user} handleLogout={handleLogout} />
 
       <Routes>
@@ -111,6 +113,7 @@ function App() {
           }
         /> 
       </Routes>
+      </div>
     </BrowserRouter>
   );
 }
