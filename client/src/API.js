@@ -49,3 +49,12 @@ export async function getRanking() {
 
   return getJson(response);
 }
+
+export async function createGame() {
+  const response = await fetch(`${SERVER_URL}/games`, {
+    method: 'POST',
+    credentials: 'include'
+  });
+
+  return getJson(response);
+}

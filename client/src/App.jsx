@@ -30,10 +30,46 @@ function HomePage({ user }) {
 }
 
 function PlayPage() {
+  const [game, setGame] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleStartGame = async () => {
+    setErrorMessage('');
+
+    try {
+      const newGame = await API.createGame();
+      setGame(newGame);
+    } catch (err) {
+      setErrorMessage(err.error || 'Game creation failed');
+    }
+  };
+
   return (
     <Container className="mt-4">
       <h1>Play</h1>
-      <p>Here the user will start and play a new game.</p>
+
+      {errorMessage && (
+        <Alert variant="danger">{errorMessage}</Alert>
+      )}
+
+      <Button onClick={handleStartGame}>
+        Start new game
+      </Button>
+
+      {game && (
+        <div className="mt-4">
+          <h3>New game created</h3>
+          <p>
+            <strong>Start station:</strong> {game.startStation.name}
+          </p>
+          <p>
+            <strong>Destination station:</strong> {game.destinationStation.name}
+          </p>
+          <p>
+            <strong>Initial coins:</strong> {game.initialCoins}
+          </p>
+        </div>
+      )}
     </Container>
   );
 }
