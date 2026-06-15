@@ -206,6 +206,91 @@ app.post('/api/games', isLoggedIn, async (req, res) => {
   }
 });
 
+// Api for planning phase
+app.get('/api/games/:id/planning', isLoggedIn, async (req, res) => {
+  try {
+    const gameId = Number(req.params.id);
+
+    if (!Number.isInteger(gameId)) {
+      return res.status(400).json({ error: 'Invalid game id' });
+    }
+
+    const game = await gamesDao.getGameByIdAndUser(gameId, req.user.id);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    if (game.status !== 'planning') {
+      return res.status(409).json({ error: 'Game is not in planning phase' });
+    }
+
+    const stations = await networkDao.getStations();
+    const segments = await networkDao.getSegments();
+
+    res.json({
+      game: {
+        id: game.id,
+        startStation: {
+          id: game.start_station_id,
+          name: game.start_station_name
+        },
+        destinationStation: {
+          id: game.destination_station_id,
+          name: game.destination_station_name
+        },
+        initialCoins: game.initial_coins,
+        status: game.status
+      },
+      stations,
+      segments
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Api for submitting the route
+app.post('/api/games/:id/route', isLoggedIn, async (req, res) => {
+  try {
+    const gameId = Number(req.params.id);
+
+    if (!Number.isInteger(gameId)) {
+      return res.status(400).json({ error: 'Invalid game id' });
+    }
+
+    const { segmentIds } = req.body;
+
+    const game = await gamesDao.getGameByIdAndUser(gameId, req.user.id);
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    if (game.status !== 'planning') {
+      return res.status(409).json({ error: 'Game is not in planning phase' });
+    }
+
+    const allSegments = await networkDao.getSegments();
+
+    const validation = gameService.validateRoute(game, segmentIds, allSegments);
+
+    if (!validation.valid) {
+      return res.status(200).json({
+        valid: false,
+        reason: validation.reason
+      });
+    }
+
+    res.json({
+      valid: true
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Route validation failed' });
+  }
+});
 
 
 // activate the server

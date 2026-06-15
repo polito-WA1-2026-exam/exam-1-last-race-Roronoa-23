@@ -41,3 +41,32 @@ export const createGame = (userId, startStationId, destinationStationId) => {
     });
   });
 };
+
+export const getGameByIdAndUser = (gameId, userId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT g.id,
+        g.user_id,
+        g.start_station_id,
+        start.name AS start_station_name,
+        g.destination_station_id,
+        dest.name AS destination_station_name,
+        g.initial_coins,
+        g.final_score,
+        g.status,
+        g.created_at,
+        g.completed_at
+      FROM games g
+      JOIN stations start ON g.start_station_id = start.id
+      JOIN stations dest ON g.destination_station_id = dest.id
+      WHERE g.id = ? AND g.user_id = ?`;
+
+    db.get(sql, [gameId, userId], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+};

@@ -1,3 +1,4 @@
+// Api for generating Starting and Ending Station
 const buildAdjacencyList = (segments) => {
   const adjacency = {};
 
@@ -64,4 +65,53 @@ export const selectStartAndDestination = (stations, segments) => {
     startStation,
     destinationStation
   };
+};
+
+
+// Submitted route validation
+export const validateRoute = (game, segmentIds, allSegments) => {
+  if (!Array.isArray(segmentIds) || segmentIds.length === 0) {
+    return { valid: false, reason: 'No segments selected' };
+  }
+
+  const uniqueSegmentIds = new Set(segmentIds);
+
+  if (uniqueSegmentIds.size !== segmentIds.length) {
+    return { valid: false, reason: 'A segment cannot be used more than once' };
+  }
+
+  const segmentsById = new Map();
+
+  for (const segment of allSegments) {
+    segmentsById.set(segment.id, segment);
+  }
+
+  let currentStationId = game.start_station_id;
+
+  for (const segmentId of segmentIds) {
+    const segment = segmentsById.get(segmentId);
+
+    if (!segment) {
+      return { valid: false, reason: 'Segment does not exist' };
+    }
+
+    if (
+      segment.station1_id !== currentStationId &&
+      segment.station2_id !== currentStationId
+    ) {
+      return { valid: false, reason: 'Route is not continuous' };
+    }
+
+    if (segment.station1_id === currentStationId) {
+      currentStationId = segment.station2_id;
+    } else {
+      currentStationId = segment.station1_id;
+    }
+  }
+
+  if (currentStationId !== game.destination_station_id) {
+    return { valid: false, reason: 'Route does not reach destination' };
+  }
+
+  return { valid: true };
 };
