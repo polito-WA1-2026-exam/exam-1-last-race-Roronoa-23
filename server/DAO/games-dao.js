@@ -148,3 +148,67 @@ export const completeGame = (gameId, finalScore) => {
     });
   });
 };
+
+// after game
+export const getCompletedGameByIdAndUser = (gameId, userId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT 
+        g.id,
+        g.user_id,
+        g.start_station_id,
+        start.name AS start_station_name,
+        g.destination_station_id,
+        dest.name AS destination_station_name,
+        g.initial_coins,
+        g.final_score,
+        g.status,
+        g.created_at,
+        g.completed_at
+      FROM games g
+      JOIN stations start ON g.start_station_id = start.id
+      JOIN stations dest ON g.destination_station_id = dest.id
+      WHERE g.id = ? AND g.user_id = ? AND g.status = 'completed'
+    `;
+
+    db.get(sql, [gameId, userId], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+};
+
+export const getGameSteps = (gameId) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT
+        gs.step_order,
+        gs.segment_id,
+        from_station.id AS from_station_id,
+        from_station.name AS from_station_name,
+        to_station.id AS to_station_id,
+        to_station.name AS to_station_name,
+        e.id AS event_id,
+        e.description AS event_description,
+        e.effect,
+        gs.coins_after_step
+      FROM game_steps gs
+      JOIN stations from_station ON gs.from_station_id = from_station.id
+      JOIN stations to_station ON gs.to_station_id = to_station.id
+      JOIN events e ON gs.event_id = e.id
+      WHERE gs.game_id = ?
+      ORDER BY gs.step_order
+    `;
+
+    db.all(sql, [gameId], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};

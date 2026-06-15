@@ -315,6 +315,50 @@ app.post('/api/games/:id/route', isLoggedIn, async (req, res) => {
 });
 
 
+// after game
+app.get('/api/games/:id/result', isLoggedIn, async (req, res) => {
+  try {
+    const gameId = Number(req.params.id);
+
+    if (!Number.isInteger(gameId)) {
+      return res.status(400).json({ error: 'Invalid game id' });
+    }
+
+    const game = await gamesDao.getCompletedGameByIdAndUser(
+      gameId,
+      req.user.id
+    );
+
+    if (!game) {
+      return res.status(404).json({ error: 'Completed game not found' });
+    }
+
+    const steps = await gamesDao.getGameSteps(gameId);
+
+    res.json({
+      game: {
+        id: game.id,
+        startStation: {
+          id: game.start_station_id,
+          name: game.start_station_name
+        },
+        destinationStation: {
+          id: game.destination_station_id,
+          name: game.destination_station_name
+        },
+        initialCoins: game.initial_coins,
+        finalScore: game.final_score,
+        status: game.status,
+        completedAt: game.completed_at
+      },
+      steps
+    });
+  } catch (err) {
+    console.error('RESULT ERROR:', err);
+    res.status(500).json({ error: 'Result loading failed' });
+  }
+});
+
 // activate the server
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
