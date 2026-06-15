@@ -1,16 +1,79 @@
 import { useEffect, useState } from 'react';
-import { Container, Navbar, Nav, Button, Spinner } from 'react-bootstrap';
+import { Container, Navbar, Nav, Button, Spinner, Table, Alert } from 'react-bootstrap';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import * as API from './API';
 import Login from './login';
 
-function HomePage() {
+function HomePage({ user }) {
   return (
     <Container className="mt-4">
       <h1>Last Race</h1>
-      <p>
-        Welcome to Last Race. Login to start planning your route and play the game.
-      </p>
+
+      {!user ? (
+        <>
+          <p>
+            Plan your route, face random events, and try to finish the race with
+            the highest number of coins.
+          </p>
+          <p>
+            Anonymous users can read the instructions, but must login to play.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>Welcome back, {user.username}.</p>
+          <p>Use the navigation bar to start a new game or check the ranking.</p>
+        </>
+      )}
+    </Container>
+  );
+}
+
+function PlayPage() {
+  return (
+    <Container className="mt-4">
+      <h1>Play</h1>
+      <p>Here the user will start and play a new game.</p>
+    </Container>
+  );
+}
+
+function RankingPage() {
+  const [ranking, setRanking] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    API.getRanking()
+      .then((ranking) => setRanking(ranking))
+      .catch((err) => setErrorMessage(err.error || 'Ranking loading failed'));
+  }, []);
+
+  return (
+    <Container className="mt-4">
+      <h1>Ranking</h1>
+
+      {errorMessage && (
+        <Alert variant="danger">{errorMessage}</Alert>
+      )}
+
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>User</th>
+            <th>Best score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ranking.map((row, index) => (
+            <tr key={row.user_id}>
+              <td>{index + 1}</td>
+              <td>{row.username}</td>
+              <td>{row.best_score}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </Container>
   );
 }
@@ -26,9 +89,20 @@ function NavigationBar({ user, handleLogout }) {
         </Navbar.Brand>
 
         <Nav className="ms-auto">
+          {user && (
+            <>
+              <Nav.Link as={Link} to="/play">
+                Play
+              </Nav.Link>
+              <Nav.Link as={Link} to="/ranking">
+                Ranking
+              </Nav.Link>
+            </>
+          )}
+
           {user ? (
             <>
-              <Navbar.Text className="me-3">
+              <Navbar.Text className="me-3 ms-3">
                 Logged in as {user.username}
               </Navbar.Text>
               <Button variant="outline-light" onClick={handleLogout}>
@@ -75,6 +149,8 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
+        <Route path="/play" element={<PlayPage />} />
+        <Route path="/ranking" element={<RankingPage />} />   
       </Routes>
     </BrowserRouter>
   );

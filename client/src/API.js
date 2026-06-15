@@ -41,3 +41,11 @@ export async function logOut() {
     throw new Error('Logout failed');
   }
 }
+
+export async function getRanking() {
+  const response = await fetch(`${SERVER_URL}/ranking`, {
+    credentials: 'include'
+  });
+
+  return getJson(response);
+}
