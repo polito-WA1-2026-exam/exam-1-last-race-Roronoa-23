@@ -70,3 +70,81 @@ export const getGameByIdAndUser = (gameId, userId) => {
     });
   });
 };
+
+export const getEvents = () => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT id, description, effect FROM events ORDER BY id `;
+
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
+export const insertGameSteps = (gameId, steps) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      INSERT INTO game_steps (
+        game_id,
+        step_order,
+        segment_id,
+        from_station_id,
+        to_station_id,
+        event_id,
+        coins_after_step
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.serialize(() => {
+      const insertNextStep = (index) => {
+        if (index === steps.length) {
+          resolve();
+          return;
+        }
+
+        const step = steps[index];
+
+        db.run(
+          sql,
+          [
+            gameId,
+            index + 1,
+            step.segmentId,
+            step.fromStationId,
+            step.toStationId,
+            step.eventId,
+            step.coinsAfterStep
+          ],
+          (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              insertNextStep(index + 1);
+            }
+          }
+        );
+      };
+
+      insertNextStep(0);
+    });
+  });
+};
+
+export const completeGame = (gameId, finalScore) => {
+  return new Promise((resolve, reject) => {
+    const sql = `UPDATE games SET final_score = ?,status = 'completed',completed_at = datetime('now') WHERE id = ?`;
+    db.run(sql, [finalScore, gameId], function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+};

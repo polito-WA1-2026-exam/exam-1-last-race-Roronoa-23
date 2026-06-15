@@ -115,3 +115,52 @@ export const validateRoute = (game, segmentIds, allSegments) => {
 
   return { valid: true };
 };
+
+// Calculating events and score during a valid route
+export const executeRoute = (game, segmentIds, allSegments, events) => {
+  let currentStationId = game.start_station_id;
+  let currentCoins = game.initial_coins;
+  const steps = [];
+
+  const segmentsById = new Map();
+
+  for (const segment of allSegments) {
+    segmentsById.set(segment.id, segment);
+  }
+
+  for (const segmentId of segmentIds) {
+    const segment = segmentsById.get(segmentId);
+
+    const fromStationId = currentStationId;
+
+    if (segment.station1_id === currentStationId) {
+      currentStationId = segment.station2_id;
+    } else {
+      currentStationId = segment.station1_id;
+    }
+
+    const toStationId = currentStationId;
+
+    const randomIndex = Math.floor(Math.random() * events.length);
+    const event = events[randomIndex];
+
+    currentCoins = currentCoins + event.effect;
+
+    steps.push({
+      segmentId,
+      fromStationId,
+      toStationId,
+      eventId: event.id,
+      eventDescription: event.description,
+      effect: event.effect,
+      coinsAfterStep: currentCoins
+    });
+  }
+
+  const finalScore = Math.max(currentCoins, 0);
+
+  return {
+    steps,
+    finalScore
+  };
+};

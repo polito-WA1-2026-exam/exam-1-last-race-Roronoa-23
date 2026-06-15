@@ -251,7 +251,7 @@ app.get('/api/games/:id/planning', isLoggedIn, async (req, res) => {
   }
 });
 
-// Api for submitting the route
+// API for submitting and executing the route
 app.post('/api/games/:id/route', isLoggedIn, async (req, res) => {
   try {
     const gameId = Number(req.params.id);
@@ -274,21 +274,43 @@ app.post('/api/games/:id/route', isLoggedIn, async (req, res) => {
 
     const allSegments = await networkDao.getSegments();
 
-    const validation = gameService.validateRoute(game, segmentIds, allSegments);
+    const validation = gameService.validateRoute(
+      game,
+      segmentIds,
+      allSegments
+    );
 
     if (!validation.valid) {
+      await gamesDao.completeGame(gameId, 0);
+
       return res.status(200).json({
         valid: false,
-        reason: validation.reason
+        reason: validation.reason,
+        finalScore: 0,
+        steps: []
       });
     }
 
+    const events = await gamesDao.getEvents();
+
+    const execution = gameService.executeRoute(
+      game,
+      segmentIds,
+      allSegments,
+      events
+    );
+
+    await gamesDao.insertGameSteps(gameId, execution.steps);
+    await gamesDao.completeGame(gameId, execution.finalScore);
+
     res.json({
-      valid: true
+      valid: true,
+      finalScore: execution.finalScore,
+      steps: execution.steps
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Route validation failed' });
+    console.error('ROUTE ERROR:', err);
+    res.status(500).json({ error: 'Route execution failed' });
   }
 });
 
