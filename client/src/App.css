@@ -228,3 +228,191 @@ button,
 .alert {
   font-family: 'SimianDisplay', system-ui, sans-serif;
 }
+
+/* Play page */
+
+.play-page {
+  position: relative;
+  padding: 2rem;
+}
+
+.start-game-panel {
+  width: min(540px, 92vw);
+  margin: 12vh auto 0;
+  padding: 2rem 2.4rem;
+  background: rgba(34, 20, 8, 0.78);
+  border: 2px solid rgba(255, 176, 54, 0.82);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 18px rgba(255, 176, 54, 0.18),
+    0 0 30px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.start-game-title {
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  font-size: 3.2rem;
+}
+
+.start-game-subtitle {
+  margin-bottom: 1.8rem;
+  font-size: 1.2rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+}
+
+.start-game-button {
+  width: 100%;
+  margin-left: 0;
+  clip-path: polygon(3% 0, 100% 0, 97% 100%, 0 100%);
+}
+
+.game-timer {
+  position: fixed;
+  top: 90px;
+  right: 34px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #f2c218;
+  font-family: 'SimianDisplay', system-ui, sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+  text-shadow:
+    0 0 4px rgba(255, 190, 30, 0.55),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.timer-icon {
+  color: #ffffff;
+  font-size: 1.8rem;
+}
+
+.setup-panel {
+  width: min(1250px, 96vw);
+  margin: 2vh auto 0;
+  padding: 2rem 2.4rem;
+  background: rgba(34, 20, 8, 0.78);
+  border: 2px solid rgba(255, 176, 54, 0.82);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 18px rgba(255, 176, 54, 0.18),
+    0 0 30px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.network-map-placeholder {
+  height: 420px;
+  margin: 1.5rem 0;
+  border: 2px solid rgba(255, 176, 54, 0.55);
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Network map */
+
+.network-map-box {
+  width: 100%;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 2px solid rgba(255, 176, 54, 0.55);
+  background: rgba(0, 0, 0, 0.38);
+  box-shadow:
+    inset 0 0 18px rgba(255, 176, 54, 0.12),
+    0 0 18px rgba(0, 0, 0, 0.45);
+}
+
+.network-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.network-segment {
+  stroke: rgba(255, 176, 54, 0.8);
+  stroke-width: 4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(255, 176, 54, 0.55));
+}
+
+.network-station-dot {
+  fill: #ffffff;
+  stroke: #eb6a00;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 5px rgba(255, 176, 54, 0.8));
+}
+
+.network-station-label {
+  fill: #ffffff;
+  font-family: 'SimianDisplay', system-ui, sans-serif;
+  font-size: 20px;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.95);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.network-segment.selected {
+  stroke: #35ff6a;
+  stroke-width: 7;
+  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
+}
+
+.network-station.clickable {
+  cursor: pointer;
+}
+
+.network-station-dot.clickable:hover {
+  fill: #f2c218;
+}
+
+.network-station-dot.start {
+  fill: #35ff6a;
+  stroke: #ffffff;
+}
+
+.network-station-dot.destination {
+  fill: #ff3b3b;
+  stroke: #ffffff;
+}
+
+.network-segment.selected {
+  stroke: #35ff6a;
+  stroke-width: 7;
+  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
+}
+
+.network-station.clickable {
+  cursor: pointer;
+}
+
+.network-station-dot.clickable:hover {
+  fill: #f2c218;
+}
+
+.network-station-dot.start {
+  fill: #35ff6a;
+  stroke: #ffffff;
+}
+
+.network-station-dot.destination {
+  fill: #ff3b3b;
+  stroke: #ffffff;
+}
+
+.network-station-dot.selected-pending {
+  fill: #f2c218;
+  stroke: #ffffff;
+  stroke-width: 5;
+  filter: drop-shadow(0 0 12px rgba(242, 194, 24, 1));
+}
+
+.network-segment.selected,
+.network-segment.invalid {
+  stroke: #35ff6a;
+  stroke-width: 7;
+  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
+}

@@ -1,38 +1,104 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Container, Table } from 'react-bootstrap';
 import * as API from './API';
+import { SetupMap, PlanningMap } from './networkmap';
 
 function PlayPage() {
-  const [game, setGame] = useState(null);
-  const [selectedSegments, setSelectedSegments] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [result, setResult] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(90);
+    const [game, setGame] = useState(null);
+    const [selectedSegments, setSelectedSegments] = useState([]);
+    const [selectedStationId, setSelectedStationId] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [result, setResult] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(900);
+    const [phase, setPhase] = useState('start');
+    const [drawnLinks, setDrawnLinks] = useState([]);
 
   const handleStartGame = async () => {
     setErrorMessage('');
     setSelectedSegments([]);
     setResult(null);
-    setTimeLeft(90);
+    setTimeLeft(900);
+    setPhase('start');
+    setSelectedStationId(null);
+    setDrawnLinks([]);
 
     try {
       const newGame = await API.createGame();
       const planningData = await API.getPlanning(newGame.id);
       setGame(planningData);
+      setPhase('setup');
     } catch (err) {
       setErrorMessage(err.error || 'Game creation failed');
     }
   };
 
-  const handleSelectSegment = (segmentId) => {
-    setSelectedSegments((oldSelectedSegments) => {
-      if (oldSelectedSegments.includes(segmentId)) {
-        return oldSelectedSegments;
-      }
 
-      return [...oldSelectedSegments, segmentId];
-    });
-  };
+
+const handleSelectStation = (stationId) => {
+  if (!game || result) {
+    return;
+  }
+
+  if (selectedStationId === null) {
+    setSelectedStationId(stationId);
+    setErrorMessage('');
+    return;
+  }
+
+  if (selectedStationId === stationId) {
+    setSelectedStationId(null);
+    setErrorMessage('');
+    return;
+  }
+
+  const realSegment = game.segments.find((segment) => {
+    const sameDirection =
+      segment.station1_id === selectedStationId &&
+      segment.station2_id === stationId;
+
+    const oppositeDirection =
+      segment.station1_id === stationId &&
+      segment.station2_id === selectedStationId;
+
+    return sameDirection || oppositeDirection;
+  });
+
+  if (realSegment) {
+    setSelectedSegments((oldSelectedSegments) => [
+      ...oldSelectedSegments,
+      realSegment.id
+    ]);
+
+    setDrawnLinks((oldDrawnLinks) => [
+      ...oldDrawnLinks,
+      {
+        id: realSegment.id,
+        station1_id: selectedStationId,
+        station2_id: stationId,
+        valid: true
+      }
+    ]);
+  } else {
+    setSelectedSegments((oldSelectedSegments) => [
+      ...oldSelectedSegments,
+      -(oldSelectedSegments.length + 1)
+    ]);
+
+    setDrawnLinks((oldDrawnLinks) => [
+      ...oldDrawnLinks,
+      {
+        id: -(oldDrawnLinks.length + 1),
+        station1_id: selectedStationId,
+        station2_id: stationId,
+        valid: false
+      }
+    ]);
+  }
+
+  setSelectedStationId(null);
+  setErrorMessage('');
+};
+
   const handleSubmitRoute = async () => {
       setErrorMessage('');
 
@@ -48,142 +114,215 @@ function PlayPage() {
   }
 };
 
-    useEffect(() => {
-      if (!game || result) {
-        return;
-      }
+        useEffect(() => {
+        if (!game || result || phase !== 'planning') {
+            return;
+        }
 
-      if (timeLeft === 0) {
-        handleSubmitRoute();
-        return;
-      }
+        if (timeLeft <= 0) {
+            handleSubmitRoute();
+            return;
+        }
 
-      const timerId = setTimeout(() => {
-        setTimeLeft((oldTimeLeft) => oldTimeLeft - 1);
-      }, 1000);
+        const timerId = setTimeout(() => {
+            setTimeLeft((oldTimeLeft) => oldTimeLeft - 1);
+        }, 100);
 
-      return () => clearTimeout(timerId);
-    }, [game, result, timeLeft]);
+        return () => clearTimeout(timerId);
+        }, [game, result, timeLeft, phase]);
 
-  return (
-    <Container className="mt-4">
-      <h1>Play</h1>
+    const formatTime = (time) => {
+    const minutes = Math.floor(time / 600);
+    const seconds = Math.floor((time % 600) / 10);
+    const tenths = time % 10;
 
-      {errorMessage && (
-        <Alert variant="danger">{errorMessage}</Alert>
-      )}
+    return `${minutes}:${String(seconds).padStart(2, '0')}:${tenths}`;
+    };
 
-      <Button onClick={handleStartGame}>
-        Start new game
-      </Button>
+    const handleStartPlanning = () => {
+          setTimeLeft(900);
+        setPhase('planning');};
 
-      {game && (
-        <div className="mt-4">
-          <h3>Planning phase</h3>
+return (
+  <main className="game-page play-page">
+    {errorMessage && (
+      <Alert variant="danger">{errorMessage}</Alert>
+    )}
 
-          <p>
-            <strong>Start station:</strong> {game.game.startStation.name}
-          </p>
+    {phase === 'start' && (
+      <section className="start-game-panel">
+        <h1 className="start-game-title">Mission Terminal</h1>
 
-          <p>
-            <strong>Destination station:</strong> {game.game.destinationStation.name}
-          </p>
+        <p className="start-game-subtitle">
+          Create a new route and start the Last Race.
+        </p>
 
-          <p>
+        <Button className="game-menu-button start-game-button" onClick={handleStartGame}>
+          Start new game
+        </Button>
+      </section>
+    )}
+
+    {game && phase === 'setup' && (
+      <section className="setup-panel">
+        <h1 className="start-game-title">Network Map</h1>
+
+        <p className="start-game-subtitle">
+        Study the full network before planning your route.
+        </p>
+        <p className="start-game-subtitle">
+        The Starting station will be green, the destination red.
+        </p>
+
+        <div className="network-map-box">
+
+            <SetupMap
+            stations={game.stations}
+            segments={game.segments}
+            />
+        </div>
+
+        <Button className="game-menu-button start-game-button" onClick={handleStartPlanning}>
+        Start planning
+        </Button>
+      </section>
+    )}
+
+    {game && phase === 'planning' && (
+      <section className="planning-panel">
+        <div className="game-timer">
+          <span className="timer-icon">◷</span>
+          <span>{formatTime(timeLeft)}</span>
+        </div>
+
+        <h3>Planning phase</h3>
+
+        <p>
+          <strong>Start station:</strong> {game.game.startStation.name}
+        </p>
+
+        <p>
+          <strong>Destination station:</strong> {game.game.destinationStation.name}
+        </p>
+
+            <p>
             <strong>Initial coins:</strong> {game.game.initialCoins}
-          </p>
+            </p>
 
-          <p>
-            <strong>Time left:</strong> {timeLeft} seconds
-          </p>
+            <div className="network-map-box planning-map">
+                <PlanningMap
+                stations={game.stations}
+                drawnLinks={drawnLinks}
+                selectedStationId={selectedStationId}
+                startStationId={game.game.startStation.id}
+                destinationStationId={game.game.destinationStation.id}
+                onStationClick={handleSelectStation}
+                />
+            </div>
 
-          <h4 className="mt-4">Available segments</h4>
+            <h4 className="mt-4">Trace your route</h4>
 
-          <div className="d-flex flex-column gap-2">
-            {game.segments.map((segment) => (
-              <Button
-                key={segment.id}
-                variant={selectedSegments.includes(segment.id) ? 'success' : 'outline-primary'}
-                onClick={() => handleSelectSegment(segment.id)}
-                disabled={result !== null}
-              >
-                #{segment.id}: {segment.station1_name} → {segment.station2_name}
-              </Button>
-            ))}
-          </div>
+            <p>
+            Click the connected stations on the map to build your route.
+            </p>
 
-          <h4 className="mt-4">Selected route</h4>
+        <h4 className="mt-4">Selected route</h4>
 
-          <Button
-          className="mt-2"
-          variant="success"
-          onClick={handleSubmitRoute}
-          disabled={selectedSegments.length === 0 || result !== null}
+        {selectedSegments.length === 0 ? (
+        <p>No segment selected yet.</p>
+        ) : (
+        <p>{selectedSegments.join(' → ')}</p>
+        )}
+
+        <div className="d-flex gap-2 mt-2">
+        <Button
+            variant="warning"
+            onClick={() => {
+            setSelectedSegments((oldSelectedSegments) => oldSelectedSegments.slice(0, -1));
+            setDrawnLinks((oldDrawnLinks) => oldDrawnLinks.slice(0, -1));
+            setSelectedStationId(null);
+            }}
+            disabled={selectedSegments.length === 0 || result !== null}
         >
-          Submit route
+            Undo last segment
+        </Button>
+
+        <Button
+            variant="danger"
+            onClick={() => {
+            setSelectedSegments([]);
+            setSelectedStationId(null);
+            setDrawnLinks([]);
+            }}
+            disabled={selectedSegments.length === 0 || result !== null}
+        >
+            Clear route
+        </Button>
+        </div>
+
+        <Button
+        className="mt-2"
+        variant="success"
+        onClick={handleSubmitRoute}
+        disabled={selectedSegments.length === 0 || result !== null}
+        >
+        Submit route
         </Button>
 
 
-            {result && (
-              <div className="mt-4">
-                <h3>Result</h3>
+        {result && (
+          <div className="mt-4">
+            <h3>Result</h3>
 
-                <Alert variant="success">
-                  Game completed!
-                </Alert>
+            <Alert variant="success">
+              Game completed!
+            </Alert>
 
-                <p>
-                  <strong>Final score:</strong> {result.game.finalScore}
-                </p>
+            <p>
+              <strong>Final score:</strong> {result.game.finalScore}
+            </p>
 
-                {result.steps.length > 0 && (
-                  <>
-                    <h4>Execution steps</h4>
+            {result.steps.length > 0 && (
+              <>
+                <h4>Execution steps</h4>
 
-                    <Table striped bordered hover>
-                      <thead>
-                        <tr>
-                          <th>Step</th>
-                          <th>Segment</th>
-                          <th>Event</th>
-                          <th>Effect</th>
-                          <th>Coins after step</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {result.steps.map((step) => (
-                          <tr key={step.step_order}>
-                            <td>{step.step_order}</td>
-                            <td>
-                              {step.from_station_name} → {step.to_station_name}
-                            </td>
-                            <td>{step.event_description}</td>
-                            <td>{step.effect}</td>
-                            <td>{step.coins_after_step}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </>
-                )}
-
-                {result.steps.length === 0 && (
-                  <Alert variant="warning">
-                    Invalid or incomplete route. Execution skipped.
-                  </Alert>
-                )}
-              </div>
+                <Table striped bordered hover>
+                  <thead>
+                    <tr>
+                      <th>Step</th>
+                      <th>Segment</th>
+                      <th>Event</th>
+                      <th>Effect</th>
+                      <th>Coins after step</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.steps.map((step) => (
+                      <tr key={step.step_order}>
+                        <td>{step.step_order}</td>
+                        <td>
+                          {step.from_station_name} → {step.to_station_name}
+                        </td>
+                        <td>{step.event_description}</td>
+                        <td>{step.effect}</td>
+                        <td>{step.coins_after_step}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </>
             )}
 
-          {selectedSegments.length === 0 ? (
-            <p>No segment selected yet.</p>
-          ) : (
-            <p>{selectedSegments.join(' → ')}</p>
-          )}
-        </div>
-      )}
-    </Container>
-  );
+            {result.steps.length === 0 && (
+              <Alert variant="warning">
+                Invalid or incomplete route. Execution skipped.
+              </Alert>
+            )}
+          </div>
+        )}
+      </section>
+    )}
+  </main>
+);
 }
-
 export default PlayPage;
