@@ -87,3 +87,11 @@ export async function getGameResult(gameId) {
 
   return getJson(response);
 }
+
+export async function getFullNetwork() {
+  const response = await fetch(`${SERVER_URL}/network/full`, {
+    credentials: 'include'
+  });
+
+  return await getJson(response);
+}

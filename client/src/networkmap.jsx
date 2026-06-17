@@ -20,7 +20,7 @@ function calculateStationPositions(stations) {
   return { width, height, stationPositions };
 }
 
-function SetupMap({ stations, segments }) {
+function SetupMap({ stations, lines, lineStations }) {
   const { width, height, stationPositions } = calculateStationPositions(stations);
 
   return (
@@ -31,24 +31,33 @@ function SetupMap({ stations, segments }) {
       aria-label="Full network map"
     >
       <g className="network-segments">
-        {segments.map((segment) => {
-          const start = stationPositions.get(segment.station1_id);
-          const end = stationPositions.get(segment.station2_id);
+        {lines.map((line) => {
+          const stationsOnLine = lineStations
+            .filter((lineStation) => lineStation.line_id === line.id)
+            .sort((a, b) => a.position - b.position);
 
-          if (!start || !end) {
-            return null;
-          }
+          return stationsOnLine.slice(0, -1).map((lineStation, index) => {
+            const nextLineStation = stationsOnLine[index + 1];
 
-          return (
-            <line
-              key={segment.id}
-              x1={start.x}
-              y1={start.y}
-              x2={end.x}
-              y2={end.y}
-              className="network-segment"
-            />
-          );
+            const start = stationPositions.get(lineStation.station_id);
+            const end = stationPositions.get(nextLineStation.station_id);
+
+            if (!start || !end) {
+              return null;
+            }
+
+            return (
+              <line
+                key={`${line.id}-${lineStation.station_id}-${nextLineStation.station_id}`}
+                x1={start.x}
+                y1={start.y}
+                x2={end.x}
+                y2={end.y}
+                className="network-segment setup-line"
+                style={{ stroke: line.color }}
+              />
+            );
+          });
         })}
       </g>
 

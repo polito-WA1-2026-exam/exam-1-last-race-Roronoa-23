@@ -1,5 +1,5 @@
-# Exam #N: "Exam Title"
-## Student: s123456 LASTNAME FIRSTNAME 
+# Exam #N: "Last Race"
+## Student: s360284 CENTRELLA ANDREA
 
 ## React Client Application Routes
 

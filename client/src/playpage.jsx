@@ -26,6 +26,7 @@ function PlayPage() {
     const [timeLeft, setTimeLeft] = useState(900);
     const [phase, setPhase] = useState('start');
     const [drawnLinks, setDrawnLinks] = useState([]);
+    const [network, setNetwork] = useState(null);
 
   const handleStartGame = async () => {
     setErrorMessage('');
@@ -35,12 +36,16 @@ function PlayPage() {
     setPhase('start');
     setSelectedStationId(null);
     setDrawnLinks([]);
+    setNetwork(null);
 
     try {
-      const newGame = await API.createGame();
-      const planningData = await API.getPlanning(newGame.id);
-      setGame(planningData);
-      setPhase('setup');
+        const newGame = await API.createGame();
+        const planningData = await API.getPlanning(newGame.id);
+        const networkData = await API.getFullNetwork();
+
+        setGame(planningData);
+        setNetwork(networkData);
+        setPhase('setup');
     } catch (err) {
       setErrorMessage(err.error || 'Game creation failed');
     }
@@ -190,10 +195,13 @@ return (
 
         <div className="network-map-box">
 
+            {network && (
             <SetupMap
-            stations={game.stations}
-            segments={game.segments}
+                stations={network.stations}
+                lines={network.lines}
+                lineStations={network.lineStations}
             />
+            )}
         </div>
 
         <Button className="game-menu-button start-game-button" onClick={handleStartPlanning}>
