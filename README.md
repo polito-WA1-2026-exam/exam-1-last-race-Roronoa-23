@@ -42,10 +42,11 @@
 
 ## Database Population
 
--The **SQLite database** was populated **manually** from the terminal,    inside the **SQLite shell**, SQL INSERT statements were used to populate the initial data, including users, stations, lines, segments, events, and some completed games for the ranking.
+- The **SQLite database** - was populated **manually** from the terminal,   inside the **SQLite shell**, SQL INSERT statements were used to populate the initial data, including users, stations, lines, segments, events, and some completed games for the ranking.
 
--**User passwords** are not stored in plain text. Before inserting users into the database, passwords were hashed **using bcrypt**. For example, the following Node.js command was used to generate a password hash:
-**node -e "import bcrypt from 'bcrypt'; const hash = await bcrypt.hash('lombax', 10); console.log(hash);"**
+- **User passwords** - are not stored in plain text. Before inserting users into the database, passwords were hashed **using bcrypt**. For example, the following Node.js command was used to generate a password hash:
+
+`node -e "import bcrypt from 'bcrypt'; const hash = await bcrypt.hash('lombax', 10); console.log(hash);`**
 
 The generated hash was then inserted into the password_hash column of the users table. During login, Passport.js receives the plain password entered by the user and verifies it using bcrypt.compare. This function compares the plain password with the stored password_hash and returns whether they match.
 
@@ -59,12 +60,14 @@ The generated hash was then inserted into the password_hash column of the users 
 
 ## Screenshot
 
-![Screenshot](./img/screenshot.jpg)
+![Game Screenshot](./screenshots/Game_Screenshot.png)
+![Ranking Screenshot](./screenshots/Ranking_Screenshot.png)
 
 ## Users Credentials
 
-- username, password (plus any other requested info)
-- username, password (plus any other requested info)
+- **Ratchet** — password: `lombax`
+- **Clank** — password: `robot`
+- **Qwark** — password: `capitano`
 
 ## Use of AI Tools
 Briefly describe whether you used any AI tools (e.g., ChatGPT, GitHub Copilot, Claude) while working on this project, for which purposes (e.g., clarifying concepts, debugging, generating code), and how you verified or adapted their output.
