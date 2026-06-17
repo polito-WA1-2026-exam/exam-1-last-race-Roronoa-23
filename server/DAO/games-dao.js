@@ -181,26 +181,27 @@ export const getCompletedGameByIdAndUser = (gameId, userId) => {
   });
 };
 
-export const getGameSteps = (gameId) => {
+export function getGameSteps(gameId) {
   return new Promise((resolve, reject) => {
     const sql = `
       SELECT
         gs.step_order,
         gs.segment_id,
-        from_station.id AS from_station_id,
-        from_station.name AS from_station_name,
-        to_station.id AS to_station_id,
-        to_station.name AS to_station_name,
-        e.id AS event_id,
+        gs.from_station_id,
+        fs.name AS from_station_name,
+        gs.to_station_id,
+        ts.name AS to_station_name,
+        gs.event_id,
         e.description AS event_description,
         e.effect,
+        e.icon_filename AS event_icon_filename,
         gs.coins_after_step
       FROM game_steps gs
-      JOIN stations from_station ON gs.from_station_id = from_station.id
-      JOIN stations to_station ON gs.to_station_id = to_station.id
+      JOIN stations fs ON gs.from_station_id = fs.id
+      JOIN stations ts ON gs.to_station_id = ts.id
       JOIN events e ON gs.event_id = e.id
       WHERE gs.game_id = ?
-      ORDER BY gs.step_order
+      ORDER BY gs.step_order ASC
     `;
 
     db.all(sql, [gameId], (err, rows) => {

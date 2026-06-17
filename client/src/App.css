@@ -416,3 +416,16 @@ button,
   stroke-width: 7;
   filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
 }
+
+.event-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.event-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(255, 176, 54, 0.6));
+}

@@ -3,6 +3,20 @@ import { Alert, Button, Container, Table } from 'react-bootstrap';
 import * as API from './API';
 import { SetupMap, PlanningMap } from './networkmap';
 
+const eventIcons = import.meta.glob('./assets/events-ic/*', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+});
+
+const getEventIcon = (filename) => {
+  if (!filename) {
+    return null;
+  }
+
+  return eventIcons[`./assets/events-ic/${filename}`] || null;
+};
+
 function PlayPage() {
     const [game, setGame] = useState(null);
     const [selectedSegments, setSelectedSegments] = useState([]);
@@ -303,7 +317,19 @@ return (
                         <td>
                           {step.from_station_name} → {step.to_station_name}
                         </td>
-                        <td>{step.event_description}</td>
+                        <td>
+                        <div className="event-cell">
+                            {getEventIcon(step.event_icon_filename) && (
+                            <img
+                                src={getEventIcon(step.event_icon_filename)}
+                                alt=""
+                                className="event-icon"
+                            />
+                            )}
+
+                            <span>{step.event_description}</span>
+                        </div>
+                        </td>
                         <td>{step.effect}</td>
                         <td>{step.coins_after_step}</td>
                       </tr>
