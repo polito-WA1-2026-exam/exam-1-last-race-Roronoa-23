@@ -3,22 +3,212 @@
 
 ## React Client Application Routes
 
-- Route `/`: page content and purpose
-- Route `/something/:param`: page content and purpose, param specification
-- ...
+- Route `/`
+  - Page: `HomePage`
+  - Purpose: public homepage of the application. Anonymous users see the game introduction and instructions, while logged-in users see a welcome message and can navigate to the game or ranking pages.
+
+- Route `/login`
+  - Page: `Login`
+  - Purpose: login page. It allows users to enter their credentials and start an authenticated session.
+
+- Route `/play`
+  - Page: `PlayPage`
+  - Purpose: protected game page. Only logged-in users can access it. It manages the game flow: game creation, setup map, planning phase, route drawing, timer, route submission, and final result.
+
+- Route `/ranking`
+  - Page: `RankingPage`
+  - Purpose: protected ranking page. Only logged-in users can access it. It displays the best score achieved by each user.
 
 ## API Server
 
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- GET `/api/something`
-  - request parameters
-  - response body content
-- POST `/api/something`
-  - request parameters and request body content
-  - response body content
-- ...
+### Authentication APIs
+
+- POST `/api/sessions`
+  - Request body:
+    ```json
+    {
+      "username": "Ratchet",
+      "password": "lombax"
+    }
+    ```
+  - Response body:
+    ```json
+    {
+      "id": 1,
+      "username": "Ratchet"
+    }
+    ```
+  - Description: logs in a user using Passport.js and creates a session cookie.
+
+- GET `/api/sessions/current`
+  - Request parameters: none.
+  - Response body:
+    ```json
+    {
+      "id": 1,
+      "username": "Ratchet"
+    }
+    ```
+  - Description: returns the currently authenticated user if a valid session exists.
+
+- DELETE `/api/sessions/current`
+  - Request parameters: none.
+  - Response body: none.
+  - Description: logs out the current user and destroys the session.
+
+### Network APIs
+
+- GET `/api/network/full`
+  - Request parameters: none.
+  - Response body:
+    ```json
+    {
+      "stations": [],
+      "lines": [],
+      "segments": [],
+      "lineStations": []
+    }
+    ```
+  - Description: returns the complete transport network, including stations, lines, physical segments, and ordered stations for each line. It is used to draw the setup map.
+
+- GET `/api/stations`
+  - Request parameters: none.
+  - Response body: list of stations.
+  - Description: returns all stations.
+
+- GET `/api/lines`
+  - Request parameters: none.
+  - Response body: list of lines.
+  - Description: returns all lines with their colors.
+
+- GET `/api/segments`
+  - Request parameters: none.
+  - Response body: list of physical station-to-station segments.
+  - Description: returns all available physical connections between stations.
+
+- GET `/api/line-stations`
+  - Request parameters: none.
+  - Response body: ordered list of stations belonging to each line.
+  - Description: returns the line-station associations used to reconstruct colored lines on the setup map.
+
+### Game APIs
+
+- POST `/api/games`
+  - Request parameters: none.
+  - Request body: none.
+  - Response body:
+    ```json
+    {
+      "id": 12
+    }
+    ```
+  - Description: creates a new game for the logged-in user. The server selects a start station and a destination station at least three segments apart, immediately stores them in the `games` table, and creates the game with status `planning`.
+
+- GET `/api/games/:id/planning`
+  - Request parameter:
+    - `id`: game id.
+  - Response body:
+    ```json
+    {
+      "game": {
+        "id": 12,
+        "startStation": {
+          "id": 4,
+          "name": "Blarg"
+        },
+        "destinationStation": {
+          "id": 12,
+          "name": "Pokitaru"
+        },
+        "initialCoins": 20,
+        "status": "planning"
+      },
+      "stations": [],
+      "segments": []
+    }
+    ```
+  - Description: returns the data needed during the planning phase. The start and destination stations are read from the database, not generated on the client.
+
+- POST `/api/games/:id/route`
+  - Request parameter:
+    - `id`: game id.
+  - Request body:
+    ```json
+    {
+      "segmentIds": [17, 18, 4, 8]
+    }
+    ```
+  - Response body for a valid route:
+    ```json
+    {
+      "valid": true,
+      "finalScore": 24,
+      "steps": []
+    }
+    ```
+  - Response body for an invalid route:
+    ```json
+    {
+      "valid": false,
+      "reason": "Route is not continuous",
+      "finalScore": 0,
+      "steps": []
+    }
+    ```
+  - Description: submits the route selected by the user. The backend validates the route, executes it only if it is valid, applies random events, stores the execution steps, and completes the game.
+
+- GET `/api/games/:id/result`
+  - Request parameter:
+    - `id`: game id.
+  - Response body:
+    ```json
+    {
+      "game": {
+        "id": 12,
+        "startStation": {
+          "id": 4,
+          "name": "Blarg"
+        },
+        "destinationStation": {
+          "id": 12,
+          "name": "Pokitaru"
+        },
+        "initialCoins": 20,
+        "finalScore": 24,
+        "status": "completed",
+        "completedAt": "2026-06-17 10:30:00"
+      },
+      "steps": [
+        {
+          "step_order": 1,
+          "segment_id": 17,
+          "from_station_name": "Blarg",
+          "to_station_name": "Kaleidon",
+          "event_description": "Golden Bolt",
+          "event_icon_filename": "golden-bolt.png",
+          "effect": 4,
+          "coins_after_step": 24
+        }
+      ]
+    }
+    ```
+  - Description: returns the final result of a completed game, including the execution steps and the event icons.
+
+### Ranking API
+
+- GET `/api/ranking`
+  - Request parameters: none.
+  - Response body:
+    ```json
+    [
+      {
+        "user_id": 1,
+        "username": "Ratchet",
+        "best_score": 25
+      }
+    ]
+    ```
+  - Description: returns the ranking of logged-in users, considering only the best score of each user.
 
 ## Database Tables
 
@@ -46,17 +236,29 @@
 
 - **User passwords** - are not stored in plain text. Before inserting users into the database, passwords were hashed **using bcrypt**. For example, the following Node.js command was used to generate a password hash:
 
-`node -e "import bcrypt from 'bcrypt'; const hash = await bcrypt.hash('lombax', 10); console.log(hash);`**
+    `node -e "import bcrypt from 'bcrypt'; const hash = await bcrypt.hash('lombax', 10); console.log(hash);`
 
-The generated hash was then inserted into the password_hash column of the users table. During login, Passport.js receives the plain password entered by the user and verifies it using bcrypt.compare. This function compares the plain password with the stored password_hash and returns whether they match.
+    The generated hash was then inserted into the password_hash column of the users table. During login, Passport.js receives the plain password entered by the user and verifies it using bcrypt.compare. This function compares the plain password with the stored password_hash and returns whether they match.
 
 ## Main React Components
 
-- `ListOfSomething` (in `List.js`): component purpose and main functionality
-- `GreatButton` (in `GreatButton.js`): component purpose and main functionality
-- ...
+- `App` (in `App.jsx`): main application component. It manages the current logged-in user, checks the current session on page reload, defines the application routes, and protects private pages from anonymous users.
 
-(only _main_ components, minor ones may be skipped)
+- `NavigationBar` (in `App.jsx`): top navigation bar. It shows the application title, navigation links, the current logged-in user, and the login/logout controls.
+
+- `ProtectedRoute` (in `App.jsx`): wrapper component used to prevent anonymous users from accessing protected pages such as the game page and the ranking page.
+
+- `HomePage` (in `homepage.jsx`): homepage of the application. It shows the game introduction and instructions to anonymous users, and a welcome message to logged-in users.
+
+- `Login` (in `login.jsx`): login form component. It collects username and password, calls the login API, stores the authenticated user in the application state, and redirects the user after login.
+
+- `PlayPage` (in `playpage.jsx`): main game component. It manages the game phases, including setup, planning, route selection, timer, route submission, and result visualization.
+
+- `SetupMap` (in `networkmap.jsx`): map component used during the setup phase. It displays the complete network using the stations, lines, line colors, and line-station ordering coming from the database.
+
+- `PlanningMap` (in `networkmap.jsx`): map component used during the planning phase. It allows the user to draw a route by clicking stations and stores the selected segment ids that will later be validated by the backend.
+
+- `RankingPage` (in `rankingpage.jsx`): ranking page component. It retrieves and displays the best score for each user.
 
 ## Screenshot
 
@@ -70,5 +272,14 @@ The generated hash was then inserted into the password_hash column of the users 
 - **Qwark** — password: `capitano`
 
 ## Use of AI Tools
-Briefly describe whether you used any AI tools (e.g., ChatGPT, GitHub Copilot, Claude) while working on this project, for which purposes (e.g., clarifying concepts, debugging, generating code), and how you verified or adapted their output.
-If you did not use any AI tools, simply state so.
+
+During the development of this project, I used ChatGPT, specifically the GPT-5.5 model, as an AI support tool.
+
+The AI tool was used for the following purposes:
+
+* organizing the development phases of the project;
+* discussing and refining backend logic, especially route validation and the efficiency of path-related algorithms;
+* supporting frontend development, with heavier use for the user interface, including layout decisions, colors, visual effects, transformations, and animations;
+* debugging and improving parts of the code during development;
+* improving the wording of the application texts and the README, mainly for clarity, structure, and grammar.
+
