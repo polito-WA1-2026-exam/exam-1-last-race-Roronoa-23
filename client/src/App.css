@@ -169,7 +169,6 @@ button,
   border: 2px solid rgba(255, 176, 54, 0.82);
   border-radius: 4px;
   clip-path: polygon(3% 0, 100% 0, 97% 100%, 0 100%);
-
 }
 
 .login-title {
@@ -338,55 +337,29 @@ button,
   filter: drop-shadow(0 0 4px rgba(255, 176, 54, 0.55));
 }
 
+.network-segment.selected,
+.network-segment.invalid {
+  stroke: #35ff6a;
+  stroke-width: 7;
+  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
+}
+
+.network-segment.setup-line {
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.35));
+}
+
+.network-station.clickable {
+  cursor: pointer;
+}
+
 .network-station-dot {
   fill: #ffffff;
   stroke: #eb6a00;
   stroke-width: 4;
   filter: drop-shadow(0 0 5px rgba(255, 176, 54, 0.8));
-}
-
-.network-station-label {
-  fill: #ffffff;
-  font-family: 'SimianDisplay', system-ui, sans-serif;
-  font-size: 20px;
-  paint-order: stroke;
-  stroke: rgba(0, 0, 0, 0.95);
-  stroke-width: 4px;
-  stroke-linejoin: round;
-}
-
-.network-segment.selected {
-  stroke: #35ff6a;
-  stroke-width: 7;
-  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
-}
-
-.network-station.clickable {
-  cursor: pointer;
-}
-
-.network-station-dot.clickable:hover {
-  fill: #f2c218;
-}
-
-.network-station-dot.start {
-  fill: #35ff6a;
-  stroke: #ffffff;
-}
-
-.network-station-dot.destination {
-  fill: #ff3b3b;
-  stroke: #ffffff;
-}
-
-.network-segment.selected {
-  stroke: #35ff6a;
-  stroke-width: 7;
-  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
-}
-
-.network-station.clickable {
-  cursor: pointer;
 }
 
 .network-station-dot.clickable:hover {
@@ -410,12 +383,17 @@ button,
   filter: drop-shadow(0 0 12px rgba(242, 194, 24, 1));
 }
 
-.network-segment.selected,
-.network-segment.invalid {
-  stroke: #35ff6a;
-  stroke-width: 7;
-  filter: drop-shadow(0 0 8px rgba(53, 255, 106, 0.9));
+.network-station-label {
+  fill: #ffffff;
+  font-family: 'SimianDisplay', system-ui, sans-serif;
+  font-size: 20px;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.95);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
+
+/* Event icons */
 
 .event-cell {
   display: flex;
@@ -428,11 +406,4 @@ button,
   height: 34px;
   object-fit: contain;
   filter: drop-shadow(0 0 5px rgba(255, 176, 54, 0.6));
-}
-
-.network-segment.setup-line {
-  stroke-width: 5;
-  stroke-linecap: round;
-  opacity: 0.95;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.35));
 }

@@ -1,4 +1,4 @@
-# Exam #N: "Last Race"
+# Exam #1: "Last Race"
 ## Student: s360284 CENTRELLA ANDREA
 
 ## React Client Application Routes

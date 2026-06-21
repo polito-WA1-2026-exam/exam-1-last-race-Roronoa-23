@@ -109,7 +109,7 @@ app.get('/api/sessions/current', (req, res) => {
       username: req.user.username
     });
   } else {
-    res.status(401).json({ error: 'Not authenticated' });
+    res.json(null);
   }
 });
 

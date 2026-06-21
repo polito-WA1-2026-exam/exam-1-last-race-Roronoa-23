@@ -28,6 +28,10 @@ export async function getCurrentSession() {
     credentials: 'include'
   });
 
+  if (response.status === 401) {
+    return null;
+  }
+
   return getJson(response);
 }
 
@@ -93,5 +97,5 @@ export async function getFullNetwork() {
     credentials: 'include'
   });
 
-  return await getJson(response);
+  return getJson(response);
 }
