@@ -27,6 +27,7 @@ function PlayPage() {
   const [phase, setPhase] = useState('start');
   const [drawnLinks, setDrawnLinks] = useState([]);
   const [network, setNetwork] = useState(null);
+  const [showSegmentList, setShowSegmentList] = useState(false);
 
   const handleStartGame = async () => {
     setErrorMessage('');
@@ -37,6 +38,7 @@ function PlayPage() {
     setSelectedStationId(null);
     setDrawnLinks([]);
     setNetwork(null);
+    setShowSegmentList(false);
 
     try {
       const newGame = await API.createGame();
@@ -240,6 +242,28 @@ function PlayPage() {
               destinationStationId={game.game.destinationStation.id}
               onStationClick={handleSelectStation}
             />
+          </div>
+
+          <div className="segment-list-panel">
+            <Button
+              className="game-menu-button segment-list-toggle"
+              onClick={() => setShowSegmentList((oldValue) => !oldValue)}
+            >
+              {showSegmentList ? 'Hide segment list' : 'Show segment list'}
+            </Button>
+
+            {showSegmentList && (
+              <div className="segment-list-content">
+                {game.segments.map((segment) => (
+                  <div key={segment.id} className="segment-list-item">
+                    <span>#{segment.id}</span>
+                    <span>
+                      {segment.station1_name} — {segment.station2_name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <h4 className="mt-4">Trace your route</h4>

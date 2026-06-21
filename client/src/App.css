@@ -407,3 +407,50 @@ button,
   object-fit: contain;
   filter: drop-shadow(0 0 5px rgba(255, 176, 54, 0.6));
 }
+
+.segment-list-panel {
+  margin: 1.2rem 0;
+}
+
+.segment-list-toggle {
+  width: min(360px, 100%);
+  margin-left: 0;
+}
+
+.segment-list-content {
+  max-height: 260px;
+  margin-top: 1rem;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.42);
+  border: 2px solid rgba(255, 176, 54, 0.45);
+  box-shadow:
+    inset 0 0 14px rgba(255, 176, 54, 0.1),
+    0 0 16px rgba(0, 0, 0, 0.4);
+}
+
+.segment-list-item {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(255, 176, 54, 0.18);
+}
+
+.segment-list-item:last-child {
+  border-bottom: none;
+}
+
+.segment-list-item span:first-child {
+  color: #f2c218;
+}
+
+.planning-map {
+  max-width: 900px;
+  margin: 1rem auto;
+  padding: 0.75rem;
+}
+
+.planning-map .network-map {
+  height: 500px;
+}
